@@ -9,8 +9,15 @@ import seaborn as sns
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from wordcloud import WordCloud
 from collections import Counter
+
+# Import wordcloud with fallback
+try:
+    from wordcloud import WordCloud
+    WORDCLOUD_AVAILABLE = True
+except ImportError:
+    print("⚠ WordCloud no disponible - funcionalidad de nubes de palabras deshabilitada")
+    WORDCLOUD_AVAILABLE = False
 
 # Constantes
 POPULARITY_CATEGORY_LABEL = 'Categoría de Popularidad'
@@ -302,6 +309,23 @@ def create_wordcloud(text_data, title="Word Cloud", max_words=100):
     """
     Crea una nube de palabras
     """
+    global WORDCLOUD_AVAILABLE
+    
+    if not WORDCLOUD_AVAILABLE:
+        print("⚠ WordCloud no disponible - instalando automáticamente...")
+        try:
+            import subprocess
+            import sys
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "wordcloud"])
+            from wordcloud import WordCloud
+            WORDCLOUD_AVAILABLE = True
+            print("✓ WordCloud instalado exitosamente")
+        except Exception as e:
+            print(f"✗ No se pudo instalar WordCloud: {e}")
+            print("Creando análisis de frecuencia de palabras alternativo...")
+            create_word_frequency_bar_chart(text_data, title, max_words)
+            return
+    
     if isinstance(text_data, pd.Series):
         text = ' '.join(text_data.fillna('').astype(str))
     else:
@@ -311,6 +335,7 @@ def create_wordcloud(text_data, title="Word Cloud", max_words=100):
         print("No hay texto suficiente para crear la nube de palabras")
         return
     
+    from wordcloud import WordCloud
     wordcloud = WordCloud(width=800, height=400, 
                          background_color='white',
                          max_words=max_words,
@@ -321,6 +346,46 @@ def create_wordcloud(text_data, title="Word Cloud", max_words=100):
     plt.axis('off')
     plt.title(title, fontsize=16, fontweight='bold')
     plt.tight_layout()
+    plt.show()
+
+
+def create_word_frequency_bar_chart(text_data, title="Frecuencia de Palabras", max_words=20):
+    """
+    Alternativa a nube de palabras: gráfico de barras de frecuencia
+    """
+    if isinstance(text_data, pd.Series):
+        text = ' '.join(text_data.fillna('').astype(str))
+    else:
+        text = str(text_data)
+    
+    # Procesamiento básico de texto
+    words = text.lower().split()
+    # Filtrar palabras comunes y cortas
+    stop_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'that', 'this', 'it', 'they', 'them', 'their', 'there', 'where', 'when', 'what', 'who', 'how', 'why'}
+    filtered_words = [word for word in words if len(word) > 3 and word not in stop_words]
+    
+    word_counts = Counter(filtered_words)
+    top_words = word_counts.most_common(max_words)
+    
+    if not top_words:
+        print("No hay palabras suficientes para crear el gráfico")
+        return
+    
+    words, counts = zip(*top_words)
+    
+    plt.figure(figsize=(12, 8))
+    bars = plt.barh(range(len(words)), counts, color='skyblue')
+    plt.yticks(range(len(words)), words)
+    plt.xlabel('Frecuencia')
+    plt.title(title, fontsize=16, fontweight='bold')
+    plt.gca().invert_yaxis()  # Palabras más frecuentes arriba
+    
+    # Añadir valores en las barras
+    for i, (word, count) in enumerate(top_words):
+        plt.text(count + max(counts)*0.01, i, str(count), va='center')
+    
+    plt.tight_layout()
+    plt.show()
     plt.show()
 
 

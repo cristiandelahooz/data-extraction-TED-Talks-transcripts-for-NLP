@@ -87,9 +87,18 @@ class TedTalkAnalyzer:
     """
     
     def __init__(self):
+        # Data attributes (matching notebook naming)
+        self.data = None  # For initial load
+        self.data_original = None
+        self.data_clean = None
+        self.data_processed = None
+        
+        # Legacy names for compatibility
         self.df_original = None
         self.df_clean = None
         self.df_processed = None
+        
+        # Model attributes
         self.nlp_models = None
         self.ml_classifier = None
         self.results = {}
@@ -99,16 +108,20 @@ class TedTalkAnalyzer:
         print(f"\n=== CARGANDO DATASET: {file_path} ===")
         
         try:
-            self.df_original = pd.read_csv(file_path)
-            print(f"✓ Dataset cargado: {self.df_original.shape[0]} filas x {self.df_original.shape[1]} columnas")
+            # Load data with both naming conventions
+            self.data = pd.read_csv(file_path)
+            self.data_original = self.data.copy()
+            self.df_original = self.data.copy()  # Legacy compatibility
+            
+            print(f"✓ Dataset cargado: {self.data.shape[0]} filas x {self.data.shape[1]} columnas")
             
             # Mostrar información básica
             print("\nColumnas disponibles:")
-            for i, col in enumerate(self.df_original.columns, 1):
+            for i, col in enumerate(self.data.columns, 1):
                 print(f"{i:2d}. {col}")
             
             self.results['data_loaded'] = True
-            return self.df_original
+            return self.data
             
         except Exception as e:
             print(f"✗ Error cargando dataset: {e}")
@@ -144,27 +157,28 @@ class TedTalkAnalyzer:
     
     def clean_data(self):
         """Limpia y prepara los datos"""
-        if self.df_original is None:
+        if self.data_original is None:
             print("⚠ Primero debes cargar los datos")
             return None
         
         print("\n=== LIMPIANDO DATOS ===")
         
         try:
-            self.df_clean, cleaning_log = clean_dataset_professional(self.df_original)
+            self.data_clean, cleaning_log = clean_dataset_professional(self.data_original)
+            self.df_clean = self.data_clean  # Legacy compatibility
             
             # Validar calidad
-            quality_results = validate_data_quality(self.df_clean)
+            quality_results = validate_data_quality(self.data_clean)
             
             self.results['data_cleaning'] = {
-                'original_shape': self.df_original.shape,
-                'clean_shape': self.df_clean.shape,
+                'original_shape': self.data_original.shape,
+                'clean_shape': self.data_clean.shape,
                 'cleaning_log': cleaning_log,
                 'quality_results': quality_results
             }
             
             print("✓ Datos limpiados correctamente")
-            return self.df_clean
+            return self.data_clean
             
         except Exception as e:
             print(f"✗ Error limpiando datos: {e}")
@@ -172,7 +186,7 @@ class TedTalkAnalyzer:
     
     def process_nlp_features(self, text_column='transcript_clean'):
         """Procesa características de NLP"""
-        if self.df_clean is None:
+        if self.data_clean is None:
             print("⚠ Primero debes limpiar los datos")
             return None
         
@@ -180,15 +194,16 @@ class TedTalkAnalyzer:
         
         try:
             # Procesar características de texto
-            self.df_processed = process_text_features(
-                self.df_clean, 
+            self.data_processed = process_text_features(
+                self.data_clean, 
                 text_column=text_column, 
                 nlp_models=self.nlp_models
             )
+            self.df_processed = self.data_processed  # Legacy compatibility
             
             # Análisis de frecuencia de palabras
             word_frequencies = create_word_frequency_analysis(
-                self.df_processed, 
+                self.data_processed, 
                 text_column, 
                 stop_words=self.nlp_models['stop_words'] if self.nlp_models else None
             )
@@ -196,12 +211,13 @@ class TedTalkAnalyzer:
             self.results['nlp_processing'] = {
                 'text_column': text_column,
                 'word_frequencies': word_frequencies,
-                'features_added': [col for col in self.df_processed.columns if 
+                'sample_size': len(self.data_processed),
+                'features_added': [col for col in self.data_processed.columns if 
                                  col.startswith(('sentiment_', 'text_', 'person_', 'org_', 'gpe_'))]
             }
             
             print("✓ Características NLP procesadas correctamente")
-            return self.df_processed
+            return self.data_processed
             
         except Exception as e:
             print(f"✗ Error procesando NLP: {e}")
@@ -209,7 +225,7 @@ class TedTalkAnalyzer:
     
     def create_visualizations(self):
         """Crea todas las visualizaciones"""
-        if self.df_clean is None:
+        if self.data_clean is None:
             print("⚠ Primero debes procesar los datos")
             return
         
@@ -217,31 +233,31 @@ class TedTalkAnalyzer:
         
         try:
             # Resumen de estadísticas
-            print_summary_statistics(self.df_clean)
+            print_summary_statistics(self.data_clean)
             
             # Visualizaciones principales
-            create_data_overview_plots(self.df_clean)
+            create_data_overview_plots(self.data_clean)
             
             # Matriz de correlación
-            numeric_columns = self.df_clean.select_dtypes(include=[np.number]).columns.tolist()
-            create_correlation_heatmap(self.df_clean, numeric_columns)
+            numeric_columns = self.data_clean.select_dtypes(include=[np.number]).columns.tolist()
+            create_correlation_heatmap(self.data_clean, numeric_columns)
             
             # Análisis de sentimientos
-            create_sentiment_analysis_plots(self.df_clean)
+            create_sentiment_analysis_plots(self.data_clean)
             
             # Características textuales
-            create_text_features_plots(self.df_clean)
+            create_text_features_plots(self.data_clean)
             
             # Análisis de entidades
-            create_entity_analysis_plots(self.df_clean)
+            create_entity_analysis_plots(self.data_clean)
             
             # Nube de palabras
-            if 'transcript_clean' in self.df_clean.columns:
-                create_wordcloud(self.df_clean['transcript_clean'], 
+            if 'transcript_clean' in self.data_clean.columns:
+                create_wordcloud(self.data_clean['transcript_clean'], 
                                title="Nube de Palabras - Transcripciones TED Talks")
             
             # Gráficos interactivos
-            create_interactive_plots(self.df_clean)
+            create_interactive_plots(self.data_clean)
             
             self.results['visualizations'] = True
             print("✓ Visualizaciones creadas correctamente")
@@ -252,16 +268,19 @@ class TedTalkAnalyzer:
     
     def train_models(self, text_column='transcript_clean', target_column='popularity_numeric'):
         """Entrena modelos de machine learning"""
-        if self.df_clean is None:
+        if self.data_clean is None:
             print("⚠ Primero debes procesar los datos")
             return None
         
         print("\n=== ENTRENANDO MODELOS DE MACHINE LEARNING ===")
         
         try:
+            # Use processed data if available, otherwise clean data
+            data_to_use = self.data_processed if self.data_processed is not None else self.data_clean
+            
             # Crear y ejecutar pipeline de ML
             self.ml_classifier, ml_results = create_ml_pipeline(
-                self.df_processed,
+                data_to_use,
                 text_column=text_column,
                 target_column=target_column
             )
