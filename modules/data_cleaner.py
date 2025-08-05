@@ -1,14 +1,12 @@
 """
-Módulo para limpieza profesional de datos
+Módulo para limpieza
 """
 
 import pandas as pd
 import numpy as np
 import re
 from sklearn.preprocessing import LabelEncoder
-from collections import Counter
 from .progress_tracker import ProgressTracker, real_time_feedback
-
 
 def clean_text(text):
     """Función para limpiar texto"""
@@ -24,7 +22,6 @@ def clean_text(text):
     text = text.strip()
     
     return text
-
 
 def remove_outliers_iqr(df, column):
     """Elimina outliers usando el método IQR"""
@@ -46,7 +43,6 @@ def remove_outliers_iqr(df, column):
     print(f"   - Outliers identificados: {outliers_count} ({(outliers_count/len(df)*100):.2f}%)")
     
     return df[~outliers_mask].reset_index(drop=True), outliers_count
-
 
 def create_popularity_categories(df, views_column='views'):
     """Crea categorías de popularidad basadas en percentiles"""
@@ -80,7 +76,6 @@ def create_popularity_categories(df, views_column='views'):
         print(f"     - {cat}: {count} ({percentage:.1f}%)")
     
     return df, label_encoder
-
 
 def calculate_data_quality(df):
     """Calcula una puntuación de calidad de datos"""
@@ -116,17 +111,16 @@ def calculate_data_quality(df):
     
     return min(score, 10)  # Máximo 10
 
-
-def clean_dataset_professional(df):
+def clean_dataset(df):
     """
-    Pipeline de limpieza profesional siguiendo estándares de la industria
+    Pipeline de limpieza
     """
     df_clean = df.copy()
     cleaning_log = []
     
     # Inicializar tracker de progreso
     tracker = ProgressTracker(total_steps=4, description="Limpieza de datos")
-    tracker.start("Iniciando limpieza profesional de datos")
+    tracker.start("Iniciando limpieza")
     
     real_time_feedback(f"Dataset original: {df_clean.shape[0]} filas x {df_clean.shape[1]} columnas")
     
@@ -134,7 +128,7 @@ def clean_dataset_professional(df):
     tracker.step("Eliminando outliers con método IQR")
     
     if 'views' in df_clean.columns:
-        print("   📊 Analizando distribución de 'views'...")
+        print("Analizando distribución de 'views'...")
         df_clean, outliers_count = remove_outliers_iqr(df_clean, 'views')
         cleaning_log.append(f"Eliminados {outliers_count} outliers en 'views'")
         real_time_feedback(f"Dataset después de eliminar outliers: {df_clean.shape[0]} filas")
@@ -160,8 +154,8 @@ def clean_dataset_professional(df):
             null_count = df_clean[col].isin(['', 'nan', None]).sum()
             avg_length = df_clean[f'{col}_clean'].str.len().mean()
             
-            print(f"     - Valores vacíos: {null_count}")
-            print(f"     - Longitud promedio: {avg_length:.1f} caracteres")
+            print(f" - Valores vacíos: {null_count}")
+            print(f" - Longitud promedio: {avg_length:.1f} caracteres")
             
             cleaning_log.append(f"Limpiado columna {col}: {null_count} valores vacíos")
             processed_columns += 1
@@ -172,7 +166,7 @@ def clean_dataset_professional(df):
     tracker.step("Creando categorías de popularidad")
     
     if 'views' in df_clean.columns:
-        print("   📈 Analizando distribución de popularidad...")
+        print(" Analizando distribución de popularidad...")
         df_clean, _ = create_popularity_categories(df_clean)
         cleaning_log.append("Creadas categorías de popularidad")
     
@@ -191,7 +185,6 @@ def clean_dataset_professional(df):
     tracker.finish("Limpieza de datos completada")
     
     return df_clean, cleaning_log
-
 
 def get_data_summary(df):
     """Genera un resumen completo del dataset"""
@@ -214,7 +207,6 @@ def get_data_summary(df):
         }
     
     return summary
-
 
 def validate_data_quality(df, min_quality_score=7.0):
     """Valida la calidad del dataset limpio"""

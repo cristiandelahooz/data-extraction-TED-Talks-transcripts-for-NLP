@@ -5,7 +5,6 @@ Módulo para configuración del ambiente y instalación de dependencias
 import subprocess
 import sys
 import os
-from tqdm.auto import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -141,7 +140,6 @@ def setup_environment():
     print("\nCONFIGURACION COMPLETADA")
     print("=" * 40)
     return True
-
 
 def check_device():
     """Verifica disponibilidad de GPU"""

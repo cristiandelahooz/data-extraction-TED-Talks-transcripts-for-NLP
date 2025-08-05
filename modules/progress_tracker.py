@@ -3,7 +3,6 @@ Módulo para mostrar progreso en tiempo real
 """
 
 import time
-import sys
 from datetime import datetime
 
 class ProgressTracker:

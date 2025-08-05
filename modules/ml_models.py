@@ -4,23 +4,21 @@ Módulo para modelos de machine learning
 
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+from sklearn.model_selection import train_test_split, cross_val_score 
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from sklearn.metrics import (classification_report, confusion_matrix, 
+from sklearn.metrics import (confusion_matrix, 
                            f1_score, accuracy_score, precision_score, 
                            recall_score, roc_auc_score)
 import matplotlib.pyplot as plt
 import seaborn as sns
-from collections import defaultdict
-
 
 class TedTalkClassifier:
     """
-    Clase principal para clasificación de popularidad de TED Talks
+    Clase principal para clasificación de popularidad
     """
     
     def __init__(self):
@@ -46,10 +44,6 @@ class TedTalkClassifier:
         # Características de texto
         text_features = [col for col in df.columns if col.startswith('text_')]
         numeric_features.extend(text_features)
-        
-        # Características de sentimiento
-        #sentiment_features = [col for col in df.columns if col.startswith('sentiment_') 
-                            #and col != 'sentiment_sentiment_label']
         
         sentiment_features = [col for col in df.columns if col.startswith('sentiment_')]
         numeric_features.extend(sentiment_features)
@@ -324,46 +318,6 @@ class TedTalkClassifier:
         plt.tight_layout()
         plt.show()
     
-    def get_feature_importance(self, model_name='Random Forest', top_n=20):
-        """
-        Obtiene la importancia de características para modelos que la soportan
-        """
-        if model_name not in self.models:
-            print(f"Modelo {model_name} no encontrado")
-            return None
-        
-        model = self.models[model_name]
-        
-        if hasattr(model, 'feature_importances_'):
-            importances = model.feature_importances_
-            
-            # Crear DataFrame con importancias
-            feature_importance_df = pd.DataFrame({
-                'feature': self.feature_names,
-                'importance': importances
-            }).sort_values('importance', ascending=False)
-            
-            print(f"\nTop {top_n} características más importantes ({model_name}):")
-            top_features = feature_importance_df.head(top_n)
-            
-            for _, row in top_features.iterrows():
-                print(f"  {row['feature']}: {row['importance']:.4f}")
-            
-            # Visualización
-            plt.figure(figsize=(10, 8))
-            plt.barh(range(top_n), top_features['importance'].iloc[::-1])
-            plt.yticks(range(top_n), top_features['feature'].iloc[::-1])
-            plt.xlabel('Importancia')
-            plt.title(f'Top {top_n} Características Más Importantes - {model_name}')
-            plt.tight_layout()
-            plt.show()
-            
-            return feature_importance_df
-        
-        else:
-            print(f"El modelo {model_name} no soporta feature importance")
-            return None
-    
     def get_best_model(self, metric='f1_score'):
         """
         Obtiene el mejor modelo según la métrica especificada
@@ -448,7 +402,6 @@ class TedTalkClassifier:
         
         print(f"Resumen guardado en {filename}")
 
-
 def create_ml_pipeline(df, text_column='transcript_clean', target_column='popularity_numeric'):
     """
     Función principal para crear y ejecutar el pipeline de ML
@@ -472,9 +425,6 @@ def create_ml_pipeline(df, text_column='transcript_clean', target_column='popula
     
     # Crear visualizaciones
     classifier.create_evaluation_plots(y_test)
-    
-    # Mostrar importancia de características
-    classifier.get_feature_importance()
     
     # Obtener mejor modelo
     classifier.get_best_model()

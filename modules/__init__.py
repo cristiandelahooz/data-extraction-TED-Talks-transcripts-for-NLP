@@ -2,7 +2,6 @@
 Módulo principal que importa y configura todas las funcionalidades
 """
 
-# Importar todas las librerías básicas
 import pandas as pd
 import numpy as np
 import warnings
@@ -24,9 +23,6 @@ try:
 except ImportError as e:
     print(f"ERROR importando progress_tracker: {e}")
 
-print("Cargando módulos del proyecto TED Talks...")
-
-# Importar módulos locales
 try:
     from .environment_setup import (
         setup_environment, 
@@ -38,7 +34,7 @@ except ImportError as e:
 
 try:
     from .data_cleaner import (
-        clean_dataset_professional,
+        clean_dataset,
         validate_data_quality
     )
     print("Módulo de limpieza de datos cargado")
@@ -58,11 +54,7 @@ except ImportError as e:
 try:
     from .visualizer import (
         create_data_overview_plots,
-        create_correlation_heatmap,
-        create_sentiment_analysis_plots,
-        create_text_features_plots,
         create_entity_analysis_plots,
-        create_wordcloud,
         create_interactive_plots,
         print_summary_statistics
     )
@@ -78,7 +70,6 @@ try:
     print("Módulo de machine learning cargado")
 except ImportError as e:
     print(f"Error importando ml_models: {e}")
-
 
 class TedTalkAnalyzer:
     """
@@ -99,7 +90,7 @@ class TedTalkAnalyzer:
         
         try:
             self.data = pd.read_csv(file_path)
-            print(f"✓ Dataset cargado: {self.data.shape[0]} filas x {self.data.shape[1]} columnas")
+            print(f"Dataset cargado: {self.data.shape[0]} filas x {self.data.shape[1]} columnas")
             
             # Mostrar información básica
             print("\nColumnas disponibles:")
@@ -110,12 +101,14 @@ class TedTalkAnalyzer:
             return self.data
             
         except Exception as e:
-            print(f"✗ Error cargando dataset: {e}")
+            print(f"Error cargando dataset: {e}")
             self.results['data_loaded'] = False
             return None
     
     def setup_environment(self):
-        """Configura el ambiente y modelos necesarios"""
+        """
+        Configura el ambiente y modelos necesarios
+        """
         print("\n=== CONFIGURANDO AMBIENTE ===")
         
         try:
@@ -131,10 +124,10 @@ class TedTalkAnalyzer:
             self.results['environment_setup'] = True
             self.results['device'] = device
             
-            print("✓ Ambiente configurado correctamente")
+            print("Ambiente configurado correctamente")
             
         except Exception as e:
-            print(f"✗ Error configurando ambiente: {e}")
+            print(f"Error configurando ambiente: {e}")
             self.results['environment_setup'] = False
     
     def clean_data(self):
@@ -146,7 +139,7 @@ class TedTalkAnalyzer:
         print("\n=== LIMPIANDO DATOS ===")
         
         try:
-            self.df_clean, cleaning_log = clean_dataset_professional(self.data)
+            self.df_clean, cleaning_log = clean_dataset(self.data)
             
             # Validar calidad
             quality_results = validate_data_quality(self.df_clean)
@@ -162,7 +155,7 @@ class TedTalkAnalyzer:
             return self.df_clean
             
         except Exception as e:
-            print(f"✗ Error limpiando datos: {e}")
+            print(f"Error limpiando datos: {e}")
             return None
     
     def process_nlp_features(self, text_column='transcript_clean'):
@@ -217,23 +210,8 @@ class TedTalkAnalyzer:
             # Visualizaciones principales
             create_data_overview_plots(self.df_clean)
             
-            # Matriz de correlación
-            numeric_columns = self.df_clean.select_dtypes(include=[np.number]).columns.tolist()
-            create_correlation_heatmap(self.df_clean, numeric_columns)
-
-            # Análisis de sentimientos
-            create_sentiment_analysis_plots(self.df_processed)
-
-            # Características textuales
-            create_text_features_plots(self.df_processed)
-
             # Análisis de entidades
             create_entity_analysis_plots(self.df_processed)
-            
-            # Nube de palabras
-            if 'transcript_clean' in self.df_processed.columns:
-                create_wordcloud(self.df_processed['transcript_clean'],
-                                 title="Nube de Palabras - Transcripciones TED Talks")
             
             # Gráficos interactivos
             create_interactive_plots(self.df_processed)
@@ -274,35 +252,6 @@ class TedTalkAnalyzer:
             print(f"✗ Error entrenando modelos: {e}")
             return None
     
-    def run_complete_analysis(self, file_path=DEFAULT_DATA_FILE, text_column='transcript_clean'):
-        """Ejecuta el análisis completo"""
-        print("INICIANDO ANALISIS COMPLETO DE TED TALKS")
-        print("=" * 60)
-        
-        # Paso 1: Configurar ambiente
-        self.setup_environment()
-        
-        # Paso 2: Cargar datos
-        self.load_data(file_path)
-        
-        # Paso 3: Limpiar datos
-        self.clean_data()
-        
-        # Paso 4: Procesar NLP
-        self.process_nlp_features(text_column)
-        
-        # Paso 5: Crear visualizaciones
-        self.create_visualizations()
-        
-        # Paso 6: Entrenar modelos
-        self.train_models(text_column)
-        
-        # Resumen final
-        self.print_final_summary()
-        
-        print("\nANALISIS COMPLETO FINALIZADO")
-        return self.results
-    
     def print_final_summary(self):
         """Imprime un resumen final del análisis"""
         print("\n" + "=" * 60)
@@ -342,76 +291,3 @@ class TedTalkAnalyzer:
             print("¡Análisis 100% completo!")
         else:
             print("Algunos pasos no se completaron correctamente")
-
-
-def quick_start(file_path=DEFAULT_DATA_FILE):
-    """
-    Función de inicio rápido para ejecutar todo el análisis
-    """
-    analyzer = TedTalkAnalyzer()
-    results = analyzer.run_complete_analysis(file_path)
-    return analyzer, results
-
-
-def quick_test():
-    """
-    Función de prueba rápida para verificar que todo funciona
-    """
-    from datetime import datetime
-    
-    tracker = ProgressTracker(total_steps=4, description="Prueba rápida")
-    tracker.start("Iniciando verificación rápida del sistema")
-    
-    try:
-        # Paso 1: Verificar imports básicos
-        tracker.step("Verificando imports básicos")
-        import pandas as pd
-        import numpy as np
-        import sklearn
-        real_time_feedback("Librerías básicas: OK")
-        
-        # Paso 2: Verificar datos
-        tracker.step("Verificando acceso a datos")
-        try:
-            df = pd.read_csv(DEFAULT_DATA_FILE)
-            real_time_feedback(f"Dataset cargado: {df.shape[0]:,} filas")
-        except FileNotFoundError:
-            real_time_feedback(" Dataset no encontrado - usando datos sintéticos")
-            df = pd.DataFrame({'test': [1,2,3]})
-        
-        # Paso 3: Verificar módulos del proyecto  
-        tracker.step("Verificando módulos del proyecto")
-        functions_available = [
-            'setup_environment' in globals(),
-            'clean_dataset_professional' in globals(),
-            'process_text_features' in globals(),
-            'create_ml_pipeline' in globals()
-        ]
-        available_count = sum(functions_available)
-        real_time_feedback(f"Módulos disponibles: {available_count}/4")
-        
-        # Paso 4: Verificar configuración
-        tracker.step("Verificando configuración del ambiente")
-        try:
-            from textblob import TextBlob
-            blob = TextBlob("test")
-            real_time_feedback("TextBlob: OK")
-        except:
-            real_time_feedback("TextBlob: No disponible")
-            
-        tracker.finish("Verificación completada")
-        
-        print("\n RESULTADO DE LA PRUEBA:")
-        print("=" * 40)
-        print(f" Librerías básicas: Funcionando")
-        print(f" Acceso a datos: {'OK' if 'df' in locals() else 'Limitado'}")
-        print(f" Módulos del proyecto: {available_count}/4 disponibles")
-        print(f" Verificación completada: {datetime.now().strftime('%H:%M:%S')}")
-        print("\n Puedes proceder con el análisis completo")
-        
-        return True
-        
-    except Exception as e:
-        tracker.finish(f"Error en verificación: {e}")
-        print(f"\n ERROR: {e}")
-        return False
