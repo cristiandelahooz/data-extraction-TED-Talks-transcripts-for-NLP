@@ -63,10 +63,7 @@ except ImportError as e:
     print(f"Error importando visualizer: {e}")
 
 try:
-    from .ml_models import (
-        TedTalkClassifier,
-        create_ml_pipeline
-    )
+    from .ml_models import ( create_ml_pipeline )
     print("Módulo de machine learning cargado")
 except ImportError as e:
     print(f"Error importando ml_models: {e}")
@@ -251,43 +248,3 @@ class TedTalkAnalyzer:
         except Exception as e:
             print(f"✗ Error entrenando modelos: {e}")
             return None
-    
-    def print_final_summary(self):
-        """Imprime un resumen final del análisis"""
-        print("\n" + "=" * 60)
-        print("RESUMEN FINAL DEL ANÁLISIS")
-        print("=" * 60)
-        
-        if self.results.get('data_loaded'):
-            original_shape = self.results['data_cleaning']['original_shape']
-            clean_shape = self.results['data_cleaning']['clean_shape']
-            print(f"Datos procesados: {original_shape[0]} → {clean_shape[0]} filas")
-            print(f"Calidad de datos: {self.results['data_cleaning']['quality_results']['quality_score']:.2f}/10")
-        
-        if self.results.get('nlp_processing'):
-            features_count = len(self.results['nlp_processing']['features_added'])
-            print(f"Características NLP creadas: {features_count}")
-        
-        if self.results.get('machine_learning'):
-            models_count = len(self.results['machine_learning']['models_trained'])
-            best_model_info = self.results['machine_learning']['best_model']
-            print(f"Modelos entrenados: {models_count}")
-            if best_model_info[0]:
-                print(f"🏆 Mejor modelo: {best_model_info[0]} (F1: {best_model_info[2]:.4f})")
-        
-        # Estado general
-        steps_completed = sum([
-            self.results.get('environment_setup', False),
-            self.results.get('data_loaded', False),
-            'data_cleaning' in self.results,
-            'nlp_processing' in self.results,
-            self.results.get('visualizations', False),
-            'machine_learning' in self.results
-        ])
-        
-        print(f"Pasos completados: {steps_completed}/6")
-        
-        if steps_completed == 6:
-            print("¡Análisis 100% completo!")
-        else:
-            print("Algunos pasos no se completaron correctamente")
