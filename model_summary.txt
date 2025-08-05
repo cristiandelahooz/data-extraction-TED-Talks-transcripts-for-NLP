@@ -4,35 +4,35 @@ RESULTADOS DE EVALUACIÓN:
 --------------------------------------------------
 
 Random Forest:
-  Accuracy: 0.6000
-  Precision: 0.6482
-  Recall: 0.6000
-  F1-Score: 0.5996
-  AUC: 0.8130
+  Accuracy: 0.6050
+  Precision: 0.5435
+  Recall: 0.6050
+  F1-Score: 0.5138
+  AUC: 0.8668
 
 Gradient Boosting:
-  Accuracy: 0.9000
-  Precision: 0.9286
-  Recall: 0.9000
-  F1-Score: 0.8833
-  AUC: 1.0000
+  Accuracy: 0.9950
+  Precision: 0.9951
+  Recall: 0.9950
+  F1-Score: 0.9950
+  AUC: 0.9982
 
 Logistic Regression:
-  Accuracy: 0.6000
-  Precision: 0.5350
-  Recall: 0.6000
-  F1-Score: 0.5635
-  AUC: 0.8255
+  Accuracy: 0.8600
+  Precision: 0.8608
+  Recall: 0.8600
+  F1-Score: 0.8526
+  AUC: 0.9853
 
 SVM:
-  Accuracy: 0.5000
-  Precision: 0.4308
-  Recall: 0.5000
-  F1-Score: 0.4517
-  AUC: 0.6698
+  Accuracy: 0.7600
+  Precision: 0.7676
+  Recall: 0.7600
+  F1-Score: 0.7476
+  AUC: 0.9621
 
 MEJOR MODELO: Gradient Boosting
-F1-Score: 0.8833
+F1-Score: 0.9950
 
-CARACTERÍSTICAS UTILIZADAS: 1031
+CARACTERÍSTICAS UTILIZADAS: 1032
 MODELOS ENTRENADOS: Random Forest, Gradient Boosting, Logistic Regression, SVM
