@@ -10,7 +10,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from wordcloud import WordCloud
-from collections import Counter
+from collections import Counter                
+
 
 # Constantes
 POPULARITY_CATEGORY_LABEL = 'Categoría de Popularidad'
@@ -153,8 +154,8 @@ def create_sentiment_analysis_plots(df):
         axes[0, 1].grid(True, alpha=0.3)
     
     # 3. Sentimiento por Categoría de Popularidad
-    if 'sentiment_sentiment_label' in df.columns and 'popularity_category' in df.columns:
-        sentiment_popularity = pd.crosstab(df['popularity_category'], df['sentiment_sentiment_label'])
+    if 'sentiment_label' in df.columns and 'popularity_category' in df.columns:
+        sentiment_popularity = pd.crosstab(df['popularity_category'], df['sentiment_label'])
         sentiment_popularity_pct = sentiment_popularity.div(sentiment_popularity.sum(axis=1), axis=0) * 100
         
         sentiment_popularity_pct.plot(kind='bar', ax=axes[1, 0], stacked=True, alpha=0.8)
@@ -290,10 +291,14 @@ def create_entity_analysis_plots(df):
             
             entity_col = f'{entity_type.lower()}_count'
             if entity_col in df.columns:
-                df.boxplot(column=entity_col, by='popularity_category', ax=axes[row][col])
-                axes[row][col].set_title(f'Distribución de {entity_type} por Popularidad')
-                axes[row][col].set_xlabel(POPULARITY_CATEGORY_LABEL)
-                axes[row][col].set_ylabel(f'Cantidad de {entity_type}')
+                sns.boxplot(data=df, x='popularity_category', y=entity_col, 
+                           ax=axes[row][col], palette='viridis')
+                axes[row][col].set_title(f'Distribución de {entity_type} por Popularidad', 
+                                       fontsize=12, fontweight='bold')
+                axes[row][col].set_xlabel(POPULARITY_CATEGORY_LABEL, fontsize=10)
+                axes[row][col].set_ylabel(f'Cantidad de {entity_type}', fontsize=10)
+                axes[row][col].grid(True, alpha=0.3)
+                axes[row][col].tick_params(axis='x', rotation=45)
         
         plt.tight_layout()
         plt.show()

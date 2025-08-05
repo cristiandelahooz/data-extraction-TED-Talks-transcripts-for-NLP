@@ -48,8 +48,10 @@ class TedTalkClassifier:
         numeric_features.extend(text_features)
         
         # Características de sentimiento
-        sentiment_features = [col for col in df.columns if col.startswith('sentiment_') 
-                            and col != 'sentiment_sentiment_label']
+        #sentiment_features = [col for col in df.columns if col.startswith('sentiment_') 
+                            #and col != 'sentiment_sentiment_label']
+        
+        sentiment_features = [col for col in df.columns if col.startswith('sentiment_')]
         numeric_features.extend(sentiment_features)
         
         # Características de entidades
@@ -65,6 +67,14 @@ class TedTalkClassifier:
         
         # Crear matriz de características
         x_numeric = df[numeric_features].fillna(0)
+
+        # One-Hot Encoding para características categóricas
+        categorical_columns = x_numeric.select_dtypes(include=['object', 'category']).columns
+        if len(categorical_columns) > 0:
+            print("\nAplicando One-Hot Encoding a columnas categóricas:")
+            for col in categorical_columns:
+                print(f"  - {col}")
+            x_numeric = pd.get_dummies(x_numeric, columns=categorical_columns)
         
         # Características de texto con TF-IDF
         x_text = None
