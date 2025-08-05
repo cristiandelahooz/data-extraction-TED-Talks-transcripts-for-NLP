@@ -40,7 +40,7 @@ def process_text_features(df, text_column='transcript_clean', nlp_models=None):
     
     # 2. PREPARAR MUESTRA
     tracker.step("Preparando muestra de datos")
-    sample_size = min(10000, len(df))
+    sample_size = min(1000, len(df))
     real_time_feedback(f"Procesando muestra de {sample_size} textos para velocidad...")
     sample_df = df.head(sample_size).copy()
     
